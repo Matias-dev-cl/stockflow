@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db.models import Sum, Q
 from django.shortcuts import get_object_or_404, redirect, render
-from .forms import MovementForm, ProductForm
+from .forms import MovementForm, ProductForm, QuickMovementForm, QuickProductForm
 from .models import Product, Movement, StockBalance
 from .services import record_movement
 
@@ -34,7 +34,7 @@ def product_create(request):
 
 @login_required
 def movements(request):
-    form = MovementForm(request.POST or None)
+    form = MovementForm(request.POST or None, initial={"product": request.GET.get("producto"), "kind": request.GET.get("tipo", "IN")})
     if request.method == "POST" and form.is_valid():
         try:
             movement, balance = record_movement(user=request.user, **form.cleaned_data)
@@ -48,7 +48,25 @@ def movements(request):
 @login_required
 def product_detail(request, pk):
     product = get_object_or_404(Product.objects.select_related("category", "supplier").prefetch_related("balances__location"), pk=pk, active=True)
-    return render(request, "inventario/product_detail.html", {"product": product, "movements": product.movements.select_related("location", "user")[:20]})
+    action = request.POST.get("action") if request.method == "POST" else None
+    quick_edit_form = QuickProductForm(request.POST if action == "quick_edit" else None, instance=product)
+    initial_location = product.balances.first().location_id if product.balances.exists() else None
+    quick_movement_form = QuickMovementForm(request.POST if action == "quick_stock" else None, initial={"location": initial_location, "kind": "IN"})
+    if action == "quick_edit" and quick_edit_form.is_valid():
+        if not request.user.is_staff:
+            messages.error(request, "Solo administración puede editar el producto.")
+        else:
+            quick_edit_form.save()
+            messages.success(request, "Cambios del producto guardados.")
+            return redirect("product_detail", pk=product.pk)
+    if action == "quick_stock" and quick_movement_form.is_valid():
+        try:
+            movement, balance = record_movement(product=product, user=request.user, **quick_movement_form.cleaned_data)
+            messages.success(request, f"Listo: nuevo stock de {balance.quantity} {product.unit} en {movement.location.name}.")
+            return redirect("product_detail", pk=product.pk)
+        except ValidationError as exc:
+            quick_movement_form.add_error(None, exc.messages[0])
+    return render(request, "inventario/product_detail.html", {"product": product, "movements": product.movements.select_related("location", "user")[:20], "quick_edit_form": quick_edit_form, "quick_movement_form": quick_movement_form})
 
 @login_required
 def replenishment(request):

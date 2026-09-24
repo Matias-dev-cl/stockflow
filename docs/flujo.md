@@ -1,5 +1,9 @@
 # Flujos de inventario
 
+## Acciones rápidas desde el producto
+
+En el detalle de cada producto se puede ajustar stock indicando movimiento, ubicación, cantidad y motivo. El producto queda fijado por contexto, así no hay que buscarlo de nuevo. Desde el mismo panel, administración puede cambiar rápidamente el nombre o el mínimo de reposición. El formulario de movimientos completo también puede abrirse con el producto preseleccionado.
+
 ## Entrada
 
 ```mermaid
