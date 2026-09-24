@@ -227,3 +227,17 @@ table{min-width:620px}
 
 
 
+.quick-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr);gap:13px;margin:0 0 14px}
+.quick-panel{padding-bottom:15px}
+.quick-form{padding:0 17px;display:grid;gap:11px}
+.quick-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.quick-fields label{display:grid;gap:5px;font-size:9px;color:#656c63;font-weight:600}
+.quick-fields input,.quick-fields select{width:100%;height:34px;border:1px solid #e7e9e3;border-radius:6px;background:white;padding:0 9px;color:#40473f;font:10px var(--font);outline:none}
+.quick-fields input:focus,.quick-fields select:focus{border-color:#76a586;box-shadow:0 0 0 3px #4d91641a}
+.quick-form .button{justify-self:start}
+.quick-edit-panel{align-self:start}
+.permission-note{margin:0 17px 10px;color:#92978f;font-size:10px;line-height:1.6}
+.quick-form .message{padding:8px;font-size:9px}
+.quick-form .field-error{margin-top:-6px}
+@media(max-width:900px){.quick-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.quick-grid{grid-template-columns:1fr}.quick-fields{grid-template-columns:1fr 1fr}.quick-form{padding:0 13px}.quick-panel .panel-heading{padding:13px}}
