@@ -312,3 +312,6 @@ thead th { font-size: 10px; }
   .product-table .product-cell strong { font-size: 14px; }
   .product-table td:last-child .text-link { display: inline-flex; align-items: center; min-height: 36px; }
 }
+@media(max-width: 700px) {
+  .sidebar .workspace, .sidebar .nav-label { display: none; }
+}
