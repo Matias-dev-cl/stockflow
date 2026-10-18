@@ -40,9 +40,9 @@ Dos salidas simultáneas sobre el mismo saldo deben serializarse en la fila bloq
 4. Si cambia, guarda un movimiento de ajuste con delta firmado, motivo obligatorio y saldo resultante.
 5. Si el nuevo saldo es negativo (por dato inválido), rechaza la operación.
 
-## Corrección de un movimiento
+## Corrección enlazada de un movimiento (flujo previsto)
 
-Un movimiento confirmado no se edita. El usuario autorizado crea un movimiento compensatorio ligado al original y explica el motivo. La corrección respeta las mismas reglas de saldo y permisos. La interfaz muestra juntos el movimiento original y su corrección.
+Este flujo enlazado todavía no tiene interfaz pública. Un movimiento confirmado no se edita. El usuario autorizado crea un movimiento compensatorio ligado al original y explica el motivo. La corrección respeta las mismas reglas de saldo y permisos. La interfaz muestra juntos el movimiento original y su corrección.
 
 ## Reposición
 

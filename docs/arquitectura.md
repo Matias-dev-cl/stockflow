@@ -1,88 +1,94 @@
 # Arquitectura y modelo de datos
 
-## Modelo de dominio
+## Arquitectura actual
+
+StockFlow es un monolito Django con una aplicación de dominio, `apps.inventario`. Las vistas HTML y la API llaman al mismo servicio `record_movement`; así las reglas de stock se aplican igual en ambos puntos de entrada.
+
+```mermaid
+flowchart LR
+    Usuario --> HTML[Vistas y formularios]
+    ClienteAPI --> DRF[API REST autenticada]
+    HTML --> Servicio[Servicio transaccional de inventario]
+    DRF --> Servicio
+    Servicio --> BD[(PostgreSQL / SQLite local)]
+```
+
+El admin administra catálogo y cuentas. Movimientos y saldos se muestran de solo lectura: el admin no permite crear, editar o borrar filas que evadan el servicio.
+
+## Modelo implementado
 
 ```mermaid
 erDiagram
-    USUARIO ||--o{ MOVIMIENTO : registra
-    CATEGORIA ||--o{ PRODUCTO : clasifica
-    PRODUCTO ||--o{ SALDO : mantiene
-    UBICACION ||--o{ SALDO : contiene
-    PRODUCTO ||--o{ MOVIMIENTO : afecta
-    UBICACION ||--o{ MOVIMIENTO : ocurre_en
-    PRODUCTO ||--o{ PRODUCTO_PROVEEDOR : compra_a
-    PROVEEDOR ||--o{ PRODUCTO_PROVEEDOR : ofrece
-    MOVIMIENTO o|--o| MOVIMIENTO : corrige
+    CATEGORY ||--o{ PRODUCT : clasifica
+    SUPPLIER o|--o{ PRODUCT : proveedor_principal
+    PRODUCT ||--o{ STOCK_BALANCE : tiene
+    LOCATION ||--o{ STOCK_BALANCE : contiene
+    PRODUCT ||--o{ MOVEMENT : afecta
+    LOCATION ||--o{ MOVEMENT : ocurre_en
+    USER ||--o{ MOVEMENT : registra
+    MOVEMENT o|--o{ MOVEMENT : corrects_reservado
 
-    PRODUCTO {
+    PRODUCT {
         string sku UK
-        string nombre
-        string unidad
-        int minimo_reposicion
-        bool activo
+        string name
+        string unit
+        int minimum
+        bool active
     }
-    SALDO {
-        int cantidad
-        datetime actualizado_en
-        unique producto_ubicacion
+    STOCK_BALANCE {
+        int quantity
+        unique product_location
     }
-    MOVIMIENTO {
-        string tipo "ENTRADA | SALIDA | AJUSTE"
-        int cantidad "positiva"
-        string motivo
-        datetime creado_en
-        string estado "CONFIRMADO"
-        fk movimiento_corregido
-    }
-    UBICACION {
-        string codigo UK
-        string nombre
-        bool activa
-    }
-    PROVEEDOR {
-        string nombre
-        string email
-        bool activo
-    }
-    PRODUCTO_PROVEEDOR {
-        string sku_proveedor
-        bool preferido
-        unique producto_proveedor
+    MOVEMENT {
+        string kind "IN | OUT | ADJUST"
+        int quantity
+        string reason
+        datetime created_at
+        fk user
+        fk corrects "reservado; sin flujo público"
     }
 ```
 
-## Fuente de verdad del saldo
+`Product.supplier` es una referencia opcional a un solo proveedor. La relación múltiple producto–proveedor y el SKU del proveedor no están implementados. Los movimientos no tienen borradores: se crean confirmados al terminar la transacción.
 
-`Movimiento` es el libro de eventos: cada fila confirmada representa un cambio y no se reescribe. `Saldo` es una proyección materializada por par producto–ubicación que permite consultas rápidas. Ambos se modifican en una sola transacción. El saldo debe poder reconstruirse a partir de movimientos; una tarea de auditoría o comando de gestión podrá recalcularlo y detectar diferencias.
+## Historial y saldo
 
-La dirección del efecto la determina `tipo`: entrada suma, salida resta y ajuste aplica una diferencia explícita respecto del saldo contado. En el ajuste se almacena la cantidad del delta con signo, mientras que entradas y salidas requieren cantidad positiva. Esta convención se valida en el modelo de dominio/servicio, no solo en formularios.
+`Movement` explica cada cambio. `StockBalance` guarda la proyección por par producto–ubicación para consultar el disponible.
+
+- IN: cantidad positiva; suma.
+- OUT: cantidad positiva; resta.
+- ADJUST: diferencia firmada distinta de cero; suma o resta.
+- `delta` representa el efecto real y `signed_quantity` lo muestra con un solo signo.
+
+El stock inicial también es una entrada. No se suma otra cantidad inicial por fuera del historial.
 
 ## Integridad y concurrencia
 
-- Restricción única para SKU y para el par producto–ubicación de `Saldo`.
-- Cantidad de saldo nunca negativa; cantidades y mínimos se validan según tipo.
-- Crear movimiento y cambiar saldo dentro de `transaction.atomic()`.
-- Bloquear la fila `Saldo` correspondiente con `select_for_update()` antes de validar una salida. Crear saldo inicial de forma segura si aún no existe.
-- El cliente no puede enviar directamente un saldo final; la API recibe tipo, cantidad, ubicación y motivo.
-- Usar borrado protegido para categorías/proveedores referenciados y archivado lógico para entidades con historial.
-- Indexar SKU, estado activo, fecha de movimiento y producto/ubicación para las consultas frecuentes.
+- SKU único y saldo único por producto–ubicación.
+- Restricción en base de datos para impedir saldo negativo.
+- Restricción para tipos y cantidades de movimiento válidos.
+- Servicio que valida motivo, entidad activa, autor, rango entero y saldo resultante.
+- `transaction.atomic()` abarca la creación del saldo si falta, el movimiento y la actualización.
+- `select_for_update()` bloquea la fila de saldo en PostgreSQL. Una segunda salida espera y valida contra el saldo actualizado.
+- Si una escritura falla, toda la operación revierte.
+- Las claves de movimientos y saldos usan `PROTECT` para preservar el historial.
+- Archivar productos cambia `active`; su detalle e historial siguen disponibles.
 
-## Límites de aplicaciones
+SQLite permite la revisión local, pero no demuestra el bloqueo por fila. La suite incluye una prueba concurrente que requiere PostgreSQL.
 
-- `catalogo`: productos y categorías.
-- `proveedores`: proveedores y relación con productos.
-- `inventario`: ubicaciones, saldos, movimientos y servicio transaccional.
-- `usuarios`: usuario y roles.
-- `reportes`: consultas de bajo stock y agregados de lectura; no escribe movimientos.
+## Autorización
 
-La operación de stock se concentra en un servicio de dominio de `inventario`; las vistas web, el admin y la API llaman al mismo servicio. Así las reglas se mantienen iguales sin importar el punto de entrada.
+Se usa el usuario estándar de Django. `is_staff=True` identifica administración en la interfaz; un usuario autenticado sin ese indicador es operador. Los permisos de catálogo se comprueban en el servidor antes de validar o guardar cambios.
 
-## API inicial
+El acceso al admin también depende de los permisos estándar de Django. Los nuevos usuarios staff necesitan permisos de los modelos correspondientes, o ser superusuarios.
 
-Prefijo `/api/v1/` implementado inicialmente:
+## API
 
-- `GET /api/v1/productos/`
-- `GET /api/v1/movimientos/`
-- `POST /api/v1/movimientos/` (entrada, salida o ajuste)
+- `GET /api/v1/productos/`: productos activos, búsqueda por SKU, nombre o categoría.
+- `GET /api/v1/movimientos/`: historial.
+- `POST /api/v1/movimientos/`: operación por el mismo servicio de stock.
+- Las listas son paginadas: 25 resultados por defecto y máximo 100.
+- El autor de un movimiento se fija desde el usuario autenticado.
+- Errores de negocio devuelven HTTP 400; peticiones sin autenticación no acceden al inventario.
 
-Las vistas HTML implementan catálogo, detalle de producto, movimientos y reposición. Endpoints de detalle, filtros avanzados, paginación y documentación OpenAPI quedan como trabajo posterior. Las escrituras devuelven el movimiento confirmado y la API no expone operaciones para borrar o editar movimientos confirmados.
+Edición REST del catálogo, filtros avanzados y OpenAPI siguen pendientes.

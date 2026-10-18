@@ -1,58 +1,52 @@
 # StockFlow
 
-Sistema web de inventario y compras para pequeñas empresas. El objetivo es mantener una existencia confiable por producto y ubicación, registrar cada cambio de stock y ayudar a reponer a tiempo.
+Sistema web de inventario y reposición para pequeñas empresas, construido con Python, Django y Django REST Framework.
 
-> **Estado:** primera versión funcional en desarrollo local. Incluye resumen, catálogo, detalle de producto, movimientos, reposición, login y API inicial.
+> **Estado:** MVP funcional en desarrollo local. Incluye catálogo, movimientos, reposición, edición rápida, archivado reversible y API inicial. El despliegue público sigue pendiente.
 
-## Problema
+## Qué problema resuelve
 
-En una pyme, el stock suele repartirse entre planillas, mensajes y memoria. Eso vuelve difícil saber qué hay disponible, explicar diferencias o decidir cuándo comprar. StockFlow centraliza el catálogo, los proveedores y los movimientos, con un historial que permite reconstruir el saldo.
+Cuando las existencias se controlan con planillas y mensajes, resulta difícil saber cuánto hay disponible y explicar las diferencias. StockFlow reúne productos, ubicaciones y movimientos: cada entrada, salida o ajuste conserva su motivo y responsable.
 
-## Alcance del MVP
+## Qué puedes hacer
 
-- Catálogo de productos y categorías, con SKU único, unidad de medida y umbral de reposición.
-- Proveedores y datos de contacto; asociación de proveedores preferidos a productos.
-- Una o más ubicaciones de almacenamiento.
-- Ingresos, salidas y ajustes de inventario con motivo, responsable y fecha.
-- Historial cronológico por producto y saldo actual por ubicación.
-- Alertas de reposición cuando el disponible llega al umbral configurado.
-- Búsqueda, filtros y resumen de productos bajo mínimo.
-- Roles de administrador y operador.
-- API REST inicial para catálogo y registro de movimientos.
+- Buscar productos por nombre, SKU o categoría; filtrar activos, archivados y productos por reponer.
+- Crear y editar productos como administrador. Al crear uno, abrir su detalle para registrar el stock inicial.
+- Registrar entradas, salidas y ajustes desde el detalle, con el producto ya seleccionado.
+- Editar rápidamente el nombre y el mínimo de reposición.
+- Archivar y reactivar productos sin borrar su historial.
+- Consultar saldos por ubicación y recorrer todo el historial mediante paginación.
+- Revisar reposición: un mínimo de cero desactiva la alerta.
+- Consultar la API y registrar movimientos autenticados.
 
-Quedan fuera de la primera versión: órdenes de compra completas, ventas, códigos de barra, lotes y vencimientos, múltiples monedas, facturación y sincronización con sistemas externos. Se dejan como posibles extensiones tras validar el flujo base.
+Categorías, proveedores, ubicaciones y cuentas se administran en el panel de Django. La versión actual admite **un proveedor principal por producto**; múltiples proveedores y códigos de proveedor siguen pendientes.
 
-## Reglas centrales
+## Reglas que protege
 
-1. El saldo no se edita directamente: se deriva de los movimientos confirmados.
-2. Ninguna salida o ajuste puede dejar el saldo disponible bajo cero.
-3. Los movimientos confirmados son de solo lectura; el flujo de correcciones compensatorias está definido, pero queda pendiente de implementar.
-4. La confirmación de una salida y la actualización del saldo ocurren en una transacción, con bloqueo de la fila de saldo para evitar carreras concurrentes.
-5. Cada movimiento identifica producto, ubicación, cantidad, tipo, motivo, usuario y fecha de creación. Los ajustes usan deltas firmados; entradas y salidas usan cantidades positivas.
-6. El SKU es único. Los nombres pueden repetirse; el SKU es la referencia operativa estable.
-7. Los productos con historial no se borran físicamente: se archivan para preservar trazabilidad.
-8. Solo administradores pueden administrar usuarios, ubicaciones y catálogo; operadores pueden consultar y registrar movimientos.
+1. El stock cambia mediante movimientos, nunca editando directamente el saldo desde la interfaz o el admin.
+2. Salidas y ajustes no pueden dejar saldo negativo.
+3. Cada movimiento requiere una cantidad válida, un motivo y un usuario activo.
+4. Registrar el movimiento y actualizar el saldo es una sola transacción.
+5. En PostgreSQL se bloquea la fila de saldo para serializar operaciones concurrentes sobre producto y ubicación.
+6. Los movimientos confirmados son de solo lectura en web, API y admin.
+7. Archivar conserva stock e historial y bloquea nuevos movimientos.
+8. Solo administración modifica el catálogo; operadores consultan y registran movimientos.
+9. La unidad de un producto se conserva después de su primer movimiento para mantener el significado de las cantidades.
 
-## Stack propuesto
+Los ajustes usan una diferencia firmada: si el sistema muestra 10 y contaste 8, registra **-2**. Entradas y salidas reciben cantidades positivas.
 
-| Tecnología | Uso |
+## Stack y decisiones
+
+| Tecnología | Función |
 |---|---|
-| Python + Django | Dominio, interfaz web, autenticación y administración |
-| Django REST Framework | API para operaciones y futuras interfaces |
-| CSS adaptable | Interfaz web inicial, sin dependencia de un framework JavaScript |
-| PostgreSQL / psycopg | Base relacional prevista y soportada por configuración |
+| Python + Django | Dominio, autenticación, formularios, administración y vistas HTML |
+| Django REST Framework | API autenticada, validación, búsqueda y paginación |
+| PostgreSQL / psycopg | Base objetivo para producción y bloqueo concurrente |
+| SQLite | Revisión local sin instalar servicios adicionales |
+| CSS adaptable | Interfaz web y tarjetas de catálogo en pantallas pequeñas |
+| GitHub Actions | Workflow preparado para ejecutar controles y pruebas con PostgreSQL |
 
-## Documentación
-
-- [Alcance del MVP](docs/alcance.md)
-- [Arquitectura y modelo de datos](docs/arquitectura.md)
-- [Flujos de inventario](docs/flujo.md)
-- [Decisiones técnicas](docs/decisiones.md)
-- [Estructura inicial](docs/estructura.md)
-
-La primera entrega todavía no configura GitHub Actions ni un despliegue público. La instalación local está preparada para revisión; el pipeline y el deploy se documentarán al decidir el entorno de publicación.
-
-## Desarrollo
+## Ejecutar en Windows
 
 Requiere Python 3.12 o superior.
 
@@ -66,6 +60,55 @@ python manage.py cargar_demo
 python manage.py runserver
 ```
 
-Abre <http://127.0.0.1:8000>. Usuario demo `maty`, contraseña `stockflow-demo`. Son credenciales exclusivamente locales para datos ficticios. Para publicar el proyecto se deben cambiar la clave secreta, configurar PostgreSQL y establecer `DEBUG=0`.
+Abre <http://127.0.0.1:8000>. Cuenta local de demostración: usuario **maty**, contraseña **stockflow-demo**. El comando es repetible y no duplica saldos ni movimientos. Solo funciona con `DEBUG=1`.
 
-Las operaciones de entrada, salida y ajuste usan un servicio transaccional común para la interfaz y la API. En los ajustes, la cantidad ingresada es el delta firmado respecto del saldo actual (por ejemplo `-3` para corregir tres unidades menos). SQLite facilita la revisión local; las garantías de bloqueo concurrente están pensadas para PostgreSQL.
+El archivo `.env` se carga automáticamente y no se versiona. Sin `DATABASE_URL` se usa SQLite; para PostgreSQL, configura una URL como `postgresql://usuario:clave@localhost:5432/stockflow`. Reinicia el servidor tras cambiar la configuración.
+
+## Comprobar el proyecto
+
+```powershell
+python manage.py check
+python manage.py makemigrations --check --dry-run
+python manage.py test apps.inventario.tests
+```
+
+La suite cubre reglas de stock, rollback, restricciones de base de datos, permisos, API, archivado, paginación, configuración y datos demo. La prueba concurrente se omite en SQLite porque ese motor no ofrece el bloqueo por fila utilizado; se ejecuta al usar PostgreSQL. El workflow está guardado en [checks.yml](.github/workflows/checks.yml), pendiente de ejecutarse en GitHub.
+
+## API inicial
+
+Requiere autenticación de sesión o autenticación básica de DRF. Para producción, todo acceso debe usar HTTPS.
+
+| Método | Ruta | Resultado |
+|---|---|---|
+| GET | `/api/v1/productos/` | Productos activos; búsqueda con `?search=texto` |
+| GET | `/api/v1/movimientos/` | Historial paginado |
+| POST | `/api/v1/movimientos/` | Registra entrada, salida o ajuste |
+
+Las listas devuelven `count`, `next`, `previous` y `results`. Tamaño predeterminado: 25; `?page_size=` permite hasta 100.
+
+Ejemplo de movimiento:
+
+```json
+{
+  "product": 1,
+  "location": 1,
+  "kind": "OUT",
+  "quantity": 2,
+  "reason": "Entrega a operaciones"
+}
+```
+
+El autor se toma de la sesión autenticada. El cliente no puede atribuir el movimiento a otra persona. La respuesta incluye `delta`, el efecto real sobre el stock.
+
+## Documentación
+
+- [Alcance y límites](docs/alcance.md)
+- [Arquitectura y datos](docs/arquitectura.md)
+- [Flujos de inventario](docs/flujo.md)
+- [Decisiones técnicas](docs/decisiones.md)
+- [Estructura del repositorio](docs/estructura.md)
+- [Revisión y trabajo pendiente](docs/revision.md)
+
+## Próximos pasos
+
+Validar la suite contra PostgreSQL en un entorno disponible, ejecutar CI en GitHub y preparar el despliegue con HTTPS, credenciales propias, estáticos y copias de respaldo. No basta con cambiar `DEBUG` para publicar la aplicación. Órdenes de compra, facturación, ventas, lotes y códigos de barra quedan fuera de esta primera entrega.

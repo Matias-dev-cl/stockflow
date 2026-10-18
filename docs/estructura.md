@@ -1,43 +1,39 @@
-# Estructura inicial
+# Estructura del repositorio
 
 ```text
 stockflow/
-├── config/                  # settings, urls y WSGI
-├── apps/
-│   └── inventario/          # catálogo, ubicaciones, saldos, movimientos y API
-│       ├── management/      # comandos de carga de datos demo
-│       ├── migrations/      # esquema de base de datos versionado
-│       ├── models.py        # entidades y restricciones
-│       ├── services.py      # operaciones de stock transaccionales
-│       ├── selectors.py     # (futuro) consultas de lectura reutilizables
-│       ├── views.py         # vistas HTML
-│       ├── forms.py         # formularios web y validación
-│       ├── api.py           # endpoints REST
-│       ├── serializers.py   # contratos JSON
-│       └── admin.py         # administración con movimientos de solo lectura
-├── templates/               # layout, pantallas y acceso
-├── static/
-│   └── css/                 # estilos compilados/listos para servir
-├── docs/                    # alcance, arquitectura, flujos y decisiones
-├── .env.example             # nombres de variables, sin secretos
+├── .github/workflows/checks.yml  # controles y suite con PostgreSQL
+├── config/                      # configuración, URLs y WSGI
+├── apps/inventario/
+│   ├── models.py                # entidades y restricciones de base de datos
+│   ├── services.py              # registro transaccional de movimientos
+│   ├── forms.py                 # formularios completos y rápidos
+│   ├── views.py                 # páginas, permisos y paginación
+│   ├── api.py                   # endpoints REST
+│   ├── serializers.py           # contrato JSON y validación
+│   ├── pagination.py            # límites de tamaño de página de API
+│   ├── urls.py
+│   ├── admin.py                 # administración; stock de solo lectura
+│   ├── migrations/              # esquema versionado
+│   ├── management/commands/     # cargar_demo
+│   └── tests/
+│       ├── test_stock.py        # integridad, rollback y concurrencia PostgreSQL
+│       ├── test_web_api.py      # permisos, flujos, API y demo
+│       └── test_settings.py     # carga de .env y conexión de base de datos
+├── templates/
+│   ├── base.html
+│   ├── registration/
+│   ├── inventario/
+│   └── partials/pagination.html
+├── static/                      # CSS y favicon
+├── docs/                        # alcance, arquitectura, flujos y revisión
+├── .env.example
+├── .gitignore
 ├── manage.py
-├── requirements.txt         # dependencias Python
+├── requirements.txt
 └── README.md
 ```
 
-## Organización interna de una app
+La aplicación de dominio se mantiene junta mientras catálogo, proveedores e inventario comparten un flujo pequeño. Si aparecen reglas independientes, se evaluará extraer aplicaciones. Las carpetas vacías de la definición inicial no representan módulos implementados y no se versionan.
 
-```text
-apps/inventario/
-├── models.py                # tablas y restricciones locales
-├── services.py              # operaciones de dominio transaccionales
-├── selectors.py             # consultas de lectura reutilizables
-├── api/                     # serializers, vistas y rutas REST
-├── views.py                 # vistas HTML
-├── forms.py                 # validación de formularios HTML
-├── admin.py                 # administración con acciones seguras
-├── urls.py
-└── tests/                   # pruebas del dominio de inventario
-```
-
-La primera versión agrupa el dominio en `apps.inventario` para mantener el arranque pequeño y revisable. Si el dominio crece, catálogo, proveedores y reportes se pueden extraer a apps propias cuando tengan flujos y reglas independientes. La estructura representa lo que existe hoy y marca las futuras separaciones sin fingir que ya están implementadas.
+`.venv`, `.env`, la base local y los archivos estáticos recopilados no se suben a Git.

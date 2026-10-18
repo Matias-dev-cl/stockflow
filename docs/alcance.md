@@ -23,9 +23,12 @@ Toda autorización se valida en el servidor. Ocultar una acción en la interfaz 
 
 - Como administrador, creo y edito productos con SKU, nombre, categoría, unidad y umbral mínimo.
 - El sistema rechaza un SKU duplicado y cantidades o umbrales negativos.
+- La unidad se mantiene fija después del primer movimiento para no reinterpretar las cantidades históricas.
 - Un producto usado en movimientos se puede archivar, pero no eliminar.
 
 ### Proveedores
+
+Estado actual: el registro y la desactivación están disponibles en el admin; cada producto admite un proveedor principal. La asociación múltiple y el código de proveedor descritos a continuación quedan pendientes de implementación.
 
 - Como administrador, registro proveedores y los relaciono con productos.
 - Puedo marcar un proveedor preferido y guardar un código de producto del proveedor si existe.

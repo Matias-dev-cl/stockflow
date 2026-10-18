@@ -1,36 +1,41 @@
-# Decisiones técnicas iniciales
+# Decisiones técnicas
 
-## 1. Movimiento como historial y saldo como proyección
+## Un servicio para cambiar stock
 
-Los movimientos explican cada cambio y son auditables. El saldo separado permite que las pantallas consulten cantidades sin sumar todo el historial en cada solicitud. Como toda proyección puede desincronizarse, se define desde el inicio un camino para reconstruir y comparar.
+`record_movement` concentra validaciones y transacción. Tanto los formularios completos y rápidos como DRF pasan por él. El admin impide modificar saldos o movimientos directamente.
 
-## 2. Servicio de dominio compartido
+## Historial como explicación; saldo como proyección
 
-La validación de stock no vive en una vista ni exclusivamente en un serializer. Un único servicio transaccional lo aplica para web, API, admin y comandos. El admin puede servir para tareas administrativas, pero no debe ofrecer edición directa del saldo ni de movimientos confirmados.
+La suma de los efectos de movimientos debe explicar el saldo de cada producto y ubicación. Mantener el saldo permite lecturas rápidas sin volver a sumar todo el historial en cada petición.
 
-## 3. PostgreSQL como base objetivo
+## PostgreSQL como objetivo
 
-El control concurrente de salidas y las restricciones relacionales son centrales al problema. Las consultas y la puesta en producción deben ejercitarse contra PostgreSQL; SQLite puede facilitar prototipos locales, pero no demostrar estas garantías.
+La operación de salida depende del bloqueo de fila para serializar solicitudes concurrentes. SQLite reduce la fricción al revisar la aplicación, pero no ofrece esa garantía. Por eso la prueba de concurrencia se ejecuta solo con un motor compatible y el workflow utiliza PostgreSQL.
 
-## 4. Ajustes con delta explícito
+## Cantidades enteras y ajustes firmados
 
-Un conteo físico produce una diferencia positiva o negativa respecto del saldo del sistema. Guardar ese delta permite entender qué cambió. La cantidad física contada y el saldo previo/resultante podrían añadirse al evento si durante la implementación se confirma que se necesitan para auditoría; no se duplican campos sin un requisito claro.
+El MVP maneja unidades enteras. Los movimientos de entrada/salida requieren un número positivo; el ajuste registra la diferencia, por ejemplo -2. El servicio evita saldos negativos y desbordamientos del rango entero de la base.
 
-## 5. Archivado en vez de borrado
+## Archivado reversible
 
-Productos, proveedores y ubicaciones con referencias históricas se desactivan. Así las consultas actuales pueden ocultar elementos archivados y los movimientos antiguos siguen siendo legibles.
+El historial no se borra cuando un producto sale del catálogo activo. El producto puede consultarse desde movimientos o desde el filtro Archivados y reactivarse. Archivar impide nuevos movimientos, pero no elimina el saldo anterior.
 
-## 6. Alcance de una organización
+## Roles simples
 
-El MVP modela una sola empresa por instalación para evitar complejidad prematura de aislamiento de datos. Antes de ofrecerlo a varias empresas en una misma instancia habrá que introducir organización y comprobar que cada consulta queda acotada por ella.
+Se utiliza el usuario de Django y `is_staff` para distinguir administración en la web. La autorización se valida en el servidor; no depende de ocultar un botón. El admin conserva el sistema de permisos por modelo de Django.
 
-## 7. API versionada desde el inicio
+## Una empresa y un proveedor principal por producto
 
-La API REST usa `/api/v1/`, aunque sea consumida por la propia interfaz al principio. Mantiene un contrato claro y permite añadir clientes sin acoplar el dominio a una página concreta.
+La instalación representa una sola organización. Cada producto admite un proveedor principal opcional. Múltiples proveedores, códigos externos y separación entre empresas necesitan un requisito y una ampliación explícita del modelo.
 
-## Pendiente de decidir antes del primer sprint
+## Interfaz HTML y CSS
 
-- Si cada usuario podrá ver costos/precios de compra o solo cantidades.
-- Si cantidades fraccionarias son requisito real.
-- Si el despliegue inicial será AWS, según el objetivo y presupuesto disponibles.
-- Si una salida requiere referencia externa (venta, orden o centro de costo).
+La aplicación actual usa plantillas Django y CSS adaptable. El catálogo cambia a tarjetas en pantallas pequeñas. Tailwind se propuso en el diseño inicial, pero no forma parte de la implementación actual.
+
+## API versionada y paginada
+
+La API usa `/api/v1/`, exige autenticación y limita las listas para que no crezcan sin control. El autor se toma de la sesión y no de un campo enviado por el cliente.
+
+## Pendiente antes de publicar
+
+Despliegue HTTPS, almacenamiento de estáticos, respaldo de base, cuentas y secretos propios, y validación real contra PostgreSQL. Un futuro flujo compensatorio enlazará las correcciones con el movimiento original; el campo `corrects` está reservado, pero no hay interfaz pública para ello.
