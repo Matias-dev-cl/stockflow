@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 
@@ -25,6 +26,14 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     class Meta: ordering = ["name"]
     def __str__(self): return f"{self.sku} · {self.name}"
+
+    def clean(self):
+        super().clean()
+        if self.pk:
+            original_unit = type(self).objects.filter(pk=self.pk).values_list("unit", flat=True).first()
+            if original_unit is not None and self.unit != original_unit and self.movements.exists():
+                raise ValidationError({"unit": "La unidad no puede cambiar después del primer movimiento. Crea otro producto si necesitas una unidad distinta."})
+
     @property
     def stock(self): return sum(b.quantity for b in self.balances.all())
 

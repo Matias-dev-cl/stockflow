@@ -241,3 +241,74 @@ table{min-width:620px}
 .quick-form .field-error{margin-top:-6px}
 @media(max-width:900px){.quick-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){.quick-grid{grid-template-columns:1fr}.quick-fields{grid-template-columns:1fr 1fr}.quick-form{padding:0 13px}.quick-panel .panel-heading{padding:13px}}
+/* Readability and complete task flows */
+.public-main { margin-left: 0; }
+.public-main .page { max-width: 900px; }
+.mobile-logout { display: none; }
+a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid #397951; outline-offset: 4px; }
+.nav-link { font-size: 13px; }
+.page-heading p, .panel-heading p { font-size: 12px; line-height: 1.6; }
+.stat-top { font-size: 12px; }
+.stat-foot { max-width: none; font-size: 11px; }
+.stat-unit, .results-count { font-size: 12px; }
+.panel-heading h2 { font-size: 15px; }
+tbody td, .product-cell strong { font-size: 12px; }
+thead th { font-size: 10px; }
+.product-cell small, .low-copy small, .low-qty small { font-size: 11px; }
+.badge { font-size: 10px; }
+.button { font-size: 12px; }
+.text-link { font-size: 12px; }
+.stack-form label, .quick-fields label { font-size: 12px; }
+.stack-form input, .stack-form select, .quick-fields input, .quick-fields select { font-size: 13px; height: 39px; }
+.field-help { font-size: 11px; font-weight: 400; line-height: 1.6; color: #727b70; }
+.history-copy strong { font-size: 13px; }
+.history-copy small { font-size: 11px; line-height: 1.5; white-space: normal; overflow-wrap: anywhere; }
+.history-amount { font-size: 13px; }
+.search-box { height: 38px; }
+.search-box input, .search-box button { font-size: 12px; }
+.location-list .low-qty strong { color: #397951; }
+.detail-history { margin-top: 15px; }
+.action-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; padding: 14px; border-top: 1px solid var(--line); }
+.pagination span { font-size: 11px; color: #687365; }
+.pagination .button { height: 32px; font-size: 11px; }
+.filter-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 15px; }
+.filter-chips a { border: 1px solid #e1e7dd; border-radius: 20px; padding: 7px 14px; font-size: 12px; color: #64715f; background: white; }
+.filter-chips a.selected { background: #e4f0e7; color: #285b3d; border-color: #bfd3c3; font-weight: 600; }
+.badge-muted { background: #f0f1ed; color: #6e756a; }
+.archive-control { max-width: 610px; margin-top: 20px; font-size: 12px; color: #73756a; }
+.archive-control summary { cursor: pointer; }
+.archive-control p { line-height: 1.7; }
+.archived-banner { display: flex; align-items: center; flex-wrap: wrap; gap: 15px; justify-content: space-between; padding: 16px; background: #efeee7; border-radius: 9px; margin-bottom: 20px; }
+.archived-banner p { font-size: 12px; color: #74776a; margin: 5px 0 0; }
+.guide-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.guide-card { padding: 22px; }
+.guide-card h2 { font: 700 16px var(--display); margin: 0 0 10px; }
+.guide-card p { color: #667360; font-size: 13px; line-height: 1.8; }
+.message { font-size: 12px; }
+.empty-state { font-size: 12px !important; }
+@media(max-width: 700px) {
+  .guide-grid { grid-template-columns: 1fr; }
+  .mobile-logout { display: flex; }
+  .public-main { margin-left: 0; }
+  .page-heading { flex-direction: column; }
+  .page-heading .button { font-size: 12px; padding: 0 12px; }
+  .action-group { width: 100%; }
+  .quick-fields { grid-template-columns: 1fr; }
+  .button { min-height: 40px; }
+  .pagination .button { height: auto; }
+  .stat-top { font-size: 11px; }
+  .history-copy small { font-size: 11px; }
+  .form-actions { flex-wrap: wrap; }
+}
+@media(max-width: 700px) {
+  .product-table { display: block; min-width: 0; white-space: normal; }
+  .product-table thead { display: none; }
+  .product-table tbody { display: grid; gap: 12px; padding: 12px; }
+  .product-table tbody tr { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: 8px; }
+  .product-table tbody td { display: block; border: 0; padding: 0; overflow-wrap: anywhere; }
+  .product-table tbody td:first-child, .product-table tbody td:last-child { grid-column: 1 / -1; padding: 0; }
+  .product-table td[data-label]::before { content: attr(data-label); display: block; color: #87907f; font-size: 10px; font-weight: 500; margin-bottom: 4px; }
+  .product-table .product-cell strong { font-size: 14px; }
+  .product-table td:last-child .text-link { display: inline-flex; align-items: center; min-height: 36px; }
+}

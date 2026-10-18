@@ -1,3 +1,62 @@
-{% extends 'base.html' %}{% block title %}{{ product.name }}{% endblock %}{% block breadcrumb %}<a href="{% url 'products' %}">Productos</a> / {{ product.sku }}{% endblock %}{% block content %}<div class="page-heading"><div><div class="eyebrow"><span class="eyebrow-dot"></span> DETALLE DE PRODUCTO</div><h1>{{ product.name }}</h1><p>{{ product.sku }} · {{ product.category.name }} · {{ product.supplier.name|default:'Sin proveedor' }}</p></div><a class="button secondary" href="{% url 'movements' %}?producto={{ product.id }}">Más opciones <span>↗</span></a></div><section class="stat-grid detail-stats"><article class="stat-card"><div class="stat-top"><span>Stock total</span><span class="stat-icon mint">▤</span></div><div class="stat-value">{{ product.stock }}<span class="stat-unit"> {{ product.unit }}</span></div><div class="stat-foot"><span>En todas las ubicaciones</span></div></article><article class="stat-card"><div class="stat-top"><span>Stock mínimo</span><span class="stat-icon peach">◉</span></div><div class="stat-value">{{ product.minimum }}<span class="stat-unit"> {{ product.unit }}</span></div><div class="stat-foot">Nivel de reposición</div></article></section>
-<section class="quick-grid"><article class="panel quick-panel"><div class="panel-heading"><div><h2>Ajustar stock</h2><p>Registra una entrada, salida o corrección sin salir del producto.</p></div><span class="form-mark">⇄</span></div><form method="post" class="quick-form">{% csrf_token %}<input type="hidden" name="action" value="quick_stock">{% if quick_movement_form.non_field_errors %}<div class="message error">{{ quick_movement_form.non_field_errors }}</div>{% endif %}<div class="quick-fields"><label>{{ quick_movement_form.kind.label }}{{ quick_movement_form.kind }}</label><label>{{ quick_movement_form.location.label }}{{ quick_movement_form.location }}</label><label>{{ quick_movement_form.quantity.label }}{{ quick_movement_form.quantity }}</label><label>{{ quick_movement_form.reason.label }}{{ quick_movement_form.reason }}</label></div>{% for field in quick_movement_form %}{% if field.errors %}<small class="field-error">{{ field.errors|join:', ' }}</small>{% endif %}{% endfor %}<button class="button primary" type="submit">Guardar movimiento <span>→</span></button></form></article><article class="panel quick-panel quick-edit-panel"><div class="panel-heading"><div><h2>Edición rápida</h2><p>Cambia el nombre o el mínimo de reposición.</p></div><span class="stat-icon lavender">✎</span></div>{% if request.user.is_staff %}<form method="post" class="quick-form">{% csrf_token %}<input type="hidden" name="action" value="quick_edit"><div class="quick-fields edit-fields">{% for field in quick_edit_form %}<label>{{ field.label }}{{ field }}{% if field.errors %}<small class="field-error">{{ field.errors|join:', ' }}</small>{% endif %}</label>{% endfor %}</div><button class="button secondary" type="submit">Guardar cambios</button></form>{% else %}<p class="permission-note">Pide a administración que actualice los datos del catálogo.</p>{% endif %}</article></section>
-<section class="panel"><div class="panel-heading"><div><h2>Existencias por ubicación</h2><p>Stock disponible desglosado por bodega.</p></div></div><div class="low-list">{% for b in product.balances.all %}<div class="low-item"><span class="product-icon">⌂</span><span class="low-copy"><strong>{{ b.location.name }}</strong><small>{{ b.location.code }}</small></span><span class="low-qty"><strong>{{ b.quantity }}</strong><small>{{ product.unit }}</small></span></div>{% empty %}<div class="empty-state">Todavía no hay saldo registrado.</div>{% endfor %}</div></section><section class="panel recent-panel"><div class="panel-heading"><div><h2>Historial del producto</h2><p>Entradas y salidas que explican el saldo actual.</p></div></div><div class="table-wrap"><table><thead><tr><th>TIPO</th><th>UBICACIÓN</th><th>CANTIDAD</th><th>MOTIVO</th><th>FECHA</th></tr></thead><tbody>{% for m in movements %}<tr><td>{{ m.get_kind_display }}</td><td>{{ m.location.name }}</td><td class="quantity">{{ m.quantity }} {{ product.unit }}</td><td>{{ m.reason }}</td><td>{{ m.created_at|date:'d M, H:i' }}</td></tr>{% empty %}<tr><td colspan="5" class="empty-state">Sin movimientos aún.</td></tr>{% endfor %}</tbody></table></div></section>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}{{ product.name }}{% endblock %}
+{% block breadcrumb %}<a href="{% url 'products' %}">Productos</a> / {{ product.sku }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><div class="eyebrow"><span class="eyebrow-dot"></span> DETALLE DE PRODUCTO</div><h1>{{ product.name }}</h1><p>{{ product.sku }} · {{ product.category.name }} · {{ product.supplier.name|default:'Sin proveedor' }}</p></div>
+  <div class="action-group">
+    {% if request.user.is_staff %}<a class="button secondary" href="{% url 'product_update' product.pk %}">Editar datos <span>✎</span></a>{% endif %}
+    {% if product.active %}<a class="button secondary" href="{% url 'movements' %}?producto={{ product.id }}">Ver movimientos <span>↗</span></a>{% endif %}
+  </div>
+</div>
+{% if not product.active %}
+<div class="archived-banner"><div><strong>Producto archivado</strong><p>El historial se conserva. Reactívalo para volver a registrar movimientos.</p></div>{% if request.user.is_staff %}<form method="post" action="{% url 'product_status' product.pk %}">{% csrf_token %}<input type="hidden" name="action" value="restore"><button class="button secondary" type="submit">Reactivar producto</button></form>{% endif %}</div>
+{% endif %}
+<section class="stat-grid detail-stats">
+  <article class="stat-card"><div class="stat-top"><span>Stock total</span><span class="stat-icon mint">▤</span></div><div class="stat-value">{{ product.stock }}<span class="stat-unit"> {{ product.unit }}</span></div><div class="stat-foot"><span>En todas las ubicaciones</span></div></article>
+  <article class="stat-card"><div class="stat-top"><span>Stock mínimo</span><span class="stat-icon peach">◉</span></div><div class="stat-value">{{ product.minimum }}<span class="stat-unit"> {{ product.unit }}</span></div><div class="stat-foot">{% if product.minimum %}Nivel de reposición{% else %}Alerta desactivada{% endif %}</div></article>
+</section>
+{% if product.active %}
+<section class="quick-grid">
+  <article class="panel quick-panel">
+    <div class="panel-heading"><div><h2>Ajustar stock</h2><p>Registra una entrada, salida o ajuste sin salir del producto.</p></div><span class="form-mark">⇄</span></div>
+    <form method="post" class="quick-form">
+      {% csrf_token %}<input type="hidden" name="action" value="quick_stock">
+      {% if quick_movement_form.non_field_errors %}<div class="message error" role="alert">{{ quick_movement_form.non_field_errors }}</div>{% endif %}
+      <div class="quick-fields">
+      {% for field in quick_movement_form %}
+        <label>{{ field.label }}{{ field }}
+          {% if field.help_text %}<small class="field-help" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</small>{% endif %}
+          {% if field.errors %}<small class="field-error">{{ field.errors|join:', ' }}</small>{% endif %}
+        </label>
+      {% endfor %}
+      </div>
+      <button class="button primary" type="submit">Guardar movimiento <span>→</span></button>
+    </form>
+  </article>
+  <article class="panel quick-panel quick-edit-panel">
+    <div class="panel-heading"><div><h2>Edición rápida</h2><p>Cambia el nombre o el mínimo de reposición.</p></div><span class="stat-icon lavender">✎</span></div>
+    {% if request.user.is_staff %}
+    <form method="post" class="quick-form">
+      {% csrf_token %}<input type="hidden" name="action" value="quick_edit">
+      {{ quick_edit_form.non_field_errors }}
+      <div class="quick-fields edit-fields">{% for field in quick_edit_form %}<label>{{ field.label }}{{ field }}{% if field.errors %}<small class="field-error">{{ field.errors|join:', ' }}</small>{% endif %}</label>{% endfor %}</div>
+      <button class="button secondary" type="submit">Guardar cambios</button>
+    </form>
+    {% else %}<p class="permission-note">Pide a administración que actualice los datos del catálogo.</p>{% endif %}
+  </article>
+</section>
+{% endif %}
+<section class="panel location-list">
+  <div class="panel-heading"><div><h2>Existencias por ubicación</h2><p>Stock disponible desglosado por bodega.</p></div></div>
+  <div class="low-list">{% for b in product.balances.all %}<div class="low-item"><span class="product-icon" aria-hidden="true">⌂</span><span class="low-copy"><strong>{{ b.location.name }}</strong><small>{{ b.location.code }}{% if not b.location.active %} · Inactiva{% endif %}</small></span><span class="low-qty"><strong>{{ b.quantity }}</strong><small>{{ product.unit }}</small></span></div>{% empty %}<div class="empty-state">Todavía no hay stock registrado.</div>{% endfor %}</div>
+</section>
+<section class="panel recent-panel detail-history">
+  <div class="panel-heading"><div><h2>Historial del producto</h2><p>Movimientos que explican el saldo actual.</p></div></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>TIPO</th><th>UBICACIÓN</th><th>CANTIDAD</th><th>MOTIVO</th><th>RESPONSABLE</th><th>FECHA</th></tr></thead>
+    <tbody>{% for m in movements %}<tr><td>{{ m.get_kind_display }}</td><td>{{ m.location.name }}</td><td class="quantity {% if m.delta > 0 %}qty-in{% else %}qty-out{% endif %}">{{ m.signed_quantity }} {{ product.unit }}</td><td>{{ m.reason }}</td><td>{{ m.user.username }}</td><td>{{ m.created_at|date:'d M Y, H:i' }}</td></tr>{% empty %}<tr><td colspan="6" class="empty-state">Sin movimientos aún.</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% include 'partials/pagination.html' %}
+</section>
+{% endblock %}

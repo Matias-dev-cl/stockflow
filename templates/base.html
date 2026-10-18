@@ -1,3 +1,43 @@
 {% load static %}<!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f6f7f5"><title>{% block title %}StockFlow{% endblock %} · StockFlow</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="{% static 'css/app.css' %}"></head>
-<body><div class="shell"><aside class="sidebar"><a class="brand" href="{% url 'dashboard' %}"><span class="brand-mark">S</span><span>stockflow<span class="brand-dot">.</span></span></a><div class="workspace"><div class="workspace-icon">M</div><div><strong>Mi empresa</strong><small>Plan de operaciones</small></div><span class="chevron">⌄</span></div><div class="nav-label">ESPACIO DE TRABAJO</div><nav class="nav"><a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}"><span class="nav-icon">▦</span>Resumen</a><a class="nav-link {% if request.resolver_match.url_name == 'products' or request.resolver_match.url_name == 'product_detail' or request.resolver_match.url_name == 'product_create' %}active{% endif %}" href="{% url 'products' %}"><span class="nav-icon">◫</span>Productos</a><a class="nav-link {% if request.resolver_match.url_name == 'movements' %}active{% endif %}" href="{% url 'movements' %}"><span class="nav-icon">⇄</span>Movimientos</a><a class="nav-link {% if request.resolver_match.url_name == 'replenishment' %}active{% endif %}" href="{% url 'replenishment' %}"><span class="nav-icon">◉</span>Reposición</a></nav><div class="sidebar-bottom"><div class="help-card"><span class="help-icon">✳</span><strong>¿Necesitas ayuda?</strong><p>Consulta la guía rápida de StockFlow.</p><a href="https://github.com/Matias-dev-cl" target="_blank" rel="noreferrer">Ver documentación <span>↗</span></a></div><div class="profile"><div class="avatar">{{ request.user.username|slice:":1"|upper }}</div><div class="profile-copy"><strong>{{ request.user.get_full_name|default:request.user.username }}</strong><small>{% if request.user.is_staff %}Administrador{% else %}Operador{% endif %}</small></div><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="icon-button" title="Cerrar sesión" aria-label="Cerrar sesión">↪</button></form></div></div></aside><main class="main"><header class="topbar"><div class="mobile-brand">StockFlow<span>.</span></div><div class="breadcrumb">Workspace <span>/</span> <strong>{% block breadcrumb %}Resumen{% endblock %}</strong></div><div class="top-actions"><span class="date-chip">◷ &nbsp; {{ now|date:"D, d M Y" }}</span><button class="icon-button notification" aria-label="Notificaciones">♧<i></i></button></div></header><div class="page">{% if messages %}<div class="messages">{% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}{% block content %}{% endblock %}<footer class="footer">StockFlow <span>·</span> Inventario claro, decisiones simples <span class="footer-right">Hecho para operar mejor&nbsp; ✳</span></footer></div></main></div></body></html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f6f7f5">
+  <title>{% block title %}StockFlow{% endblock %} · StockFlow</title>
+  <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body><div class="shell">
+{% if request.user.is_authenticated %}
+<aside class="sidebar">
+  <a class="brand" href="{% url 'dashboard' %}"><span class="brand-mark">S</span><span>stockflow<span class="brand-dot">.</span></span></a>
+  <div class="workspace"><div class="workspace-icon">S</div><div><strong>Inventario</strong><small>Espacio de trabajo</small></div></div>
+  <div class="nav-label">ESPACIO DE TRABAJO</div>
+  <nav class="nav" aria-label="Navegación principal">
+    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}"><span class="nav-icon" aria-hidden="true">▦</span><span class="nav-text">Resumen</span></a>
+    <a class="nav-link {% if 'product' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'products' %}"><span class="nav-icon" aria-hidden="true">◫</span><span class="nav-text">Productos</span></a>
+    <a class="nav-link {% if request.resolver_match.url_name == 'movements' %}active{% endif %}" href="{% url 'movements' %}"><span class="nav-icon" aria-hidden="true">⇄</span><span class="nav-text">Movimientos</span></a>
+    <a class="nav-link {% if request.resolver_match.url_name == 'replenishment' %}active{% endif %}" href="{% url 'replenishment' %}"><span class="nav-icon" aria-hidden="true">◉</span><span class="nav-text">Reposición</span></a>
+    <a class="nav-link {% if request.resolver_match.url_name == 'guide' %}active{% endif %}" href="{% url 'guide' %}"><span class="nav-icon" aria-hidden="true">?</span><span class="nav-text">Guía rápida</span></a>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="help-card"><span class="help-icon" aria-hidden="true">✳</span><strong>¿Necesitas ayuda?</strong><p>Cómo registrar movimientos y corregir un conteo.</p><a href="{% url 'guide' %}">Abrir guía <span>→</span></a></div>
+    <div class="profile"><div class="avatar">{{ request.user.username|slice:":1"|upper }}</div><div class="profile-copy"><strong>{{ request.user.get_full_name|default:request.user.username }}</strong><small>{% if request.user.is_staff %}Administrador{% else %}Operador{% endif %}</small></div><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="icon-button" type="submit" title="Cerrar sesión" aria-label="Cerrar sesión">↪</button></form></div>
+  </div>
+</aside>
+{% endif %}
+<main class="main {% if not request.user.is_authenticated %}public-main{% endif %}" id="contenido">
+  <header class="topbar">
+    <div class="mobile-brand">StockFlow<span>.</span></div>
+    <div class="breadcrumb">Inventario <span>/</span> <strong>{% block breadcrumb %}Resumen{% endblock %}</strong></div>
+    <div class="top-actions"><span class="date-chip">◷ &nbsp; {% now "d M Y" %}</span>{% if request.user.is_authenticated %}<form class="mobile-logout" method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="icon-button" type="submit" aria-label="Cerrar sesión" title="Cerrar sesión">↪</button></form>{% endif %}</div>
+  </header>
+  <div class="page">
+    {% if messages %}<div class="messages" role="status">{% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+    {% block content %}{% endblock %}
+    <footer class="footer">StockFlow <span>·</span> Inventario claro, decisiones simples <span class="footer-right">Hecho para operar mejor&nbsp; ✳</span></footer>
+  </div>
+</main>
+</div></body></html>
