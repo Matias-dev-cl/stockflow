@@ -16,11 +16,15 @@ Cuando las existencias se controlan con planillas y mensajes, resulta difícil s
 
 ## Capturas
 
-| Resumen del inventario | Catálogo adaptable |
-|---|---|
-| ![Resumen con métricas de inventario](docs/capturas/resumen.jpg) | ![Catálogo en tarjetas para pantallas pequeñas](docs/capturas/catalogo-movil.jpg) |
+Capturas completas con datos ficticios. Haz clic en cada imagen para verla en su resolución original.
 
-Las capturas utilizan datos ficticios. [Ver las acciones del detalle de producto](docs/capturas/detalle.jpg).
+### Catálogo de productos
+
+![Catálogo completo de productos, con filtros, existencias y acciones de edición](docs/capturas/catalogo.jpg)
+
+### Detalle y acciones rápidas
+
+![Detalle completo del producto, con movimientos, edición rápida, ubicaciones e historial](docs/capturas/detalle.jpg)
 
 ## Qué puedes hacer
 
