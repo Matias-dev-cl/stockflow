@@ -19,14 +19,16 @@
 | Datos demo escribían saldo e historial por separado | Usa el mismo servicio, dentro de una transacción |
 | Controles visuales sin función y curvas de tendencia sin datos | Eliminados; guía real dentro de la aplicación |
 | Texto pequeño y catálogo ancho en móvil | Tamaños legibles y tarjetas de productos |
+| El navegador retenía una hoja de estilos anterior | URL de CSS versionada según el archivo de origen |
 | Documentación describía módulos/tablas aún inexistentes | Ajustada al código real y a pendientes explícitos |
 
 ## Validación
 
-- Suite automatizada de 37 pruebas: 36 aprobadas en SQLite y una prueba concurrente omitida por requerir bloqueo de fila.
+- Suite automatizada de 38 pruebas: 37 aprobadas en SQLite y una prueba concurrente omitida por requerir bloqueo de fila.
 - Controles de Django, ausencia de migraciones pendientes y compatibilidad de dependencias.
 - Revisión visual en navegador de resumen, catálogo, formulario de edición y guía.
 - Los tests usan una base temporal; no alteran los datos de demostración del usuario.
+- Conciliación de los cinco saldos locales contra sus movimientos: cero diferencias.
 - Workflow de GitHub Actions preparado con PostgreSQL 16. No se ha ejecutado en GitHub: el repositorio sigue local.
 - Docker está instalado, pero su motor no está iniciado en este equipo. No se presenta la prueba concurrente como validada localmente.
 

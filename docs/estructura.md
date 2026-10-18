@@ -14,12 +14,14 @@ stockflow/
 │   ├── pagination.py            # límites de tamaño de página de API
 │   ├── urls.py
 │   ├── admin.py                 # administración; stock de solo lectura
+│   ├── templatetags/assets.py   # versiones de CSS para evitar caché obsoleta
 │   ├── migrations/              # esquema versionado
 │   ├── management/commands/     # cargar_demo
 │   └── tests/
 │       ├── test_stock.py        # integridad, rollback y concurrencia PostgreSQL
 │       ├── test_web_api.py      # permisos, flujos, API y demo
 │       └── test_settings.py     # carga de .env y conexión de base de datos
+│       # test_assets.py también cubre la invalidación de caché de estilos
 ├── templates/
 │   ├── base.html
 │   ├── registration/
