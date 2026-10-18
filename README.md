@@ -90,6 +90,8 @@ python manage.py test apps.inventario.tests
 
 La suite incluye 38 pruebas sobre reglas de stock, rollback, restricciones de base de datos, permisos, API, archivado, paginación, configuración, caché de estilos y datos demo. La prueba concurrente se omite en SQLite porque ese motor no ofrece el bloqueo por fila utilizado; se ejecuta al usar PostgreSQL. El [workflow](.github/workflows/checks.yml) utiliza PostgreSQL 16 y el estado de cada ejecución puede consultarse en [GitHub Actions](https://github.com/Matias-dev-cl/stockflow/actions).
 
+Las 38 pruebas, incluida la de concurrencia, aprobaron en [la primera ejecución con PostgreSQL en GitHub](https://github.com/Matias-dev-cl/stockflow/actions/runs/39164187677).
+
 ## API inicial
 
 Requiere autenticación de sesión o autenticación básica de DRF. Para producción, todo acceso debe usar HTTPS.
@@ -127,4 +129,4 @@ El autor se toma de la sesión autenticada. El cliente no puede atribuir el movi
 
 ## Próximos pasos
 
-Validar la suite contra PostgreSQL en un entorno disponible, ejecutar CI en GitHub y preparar el despliegue con HTTPS, credenciales propias, estáticos y copias de respaldo. No basta con cambiar `DEBUG` para publicar la aplicación. Órdenes de compra, facturación, ventas, lotes y códigos de barra quedan fuera de esta primera entrega.
+Preparar una demo pública con HTTPS, credenciales propias, estáticos y copias de respaldo. El código y el historial ya son públicos, y CI valida las reglas contra PostgreSQL. Órdenes de compra, facturación, ventas, lotes y códigos de barra quedan fuera de esta primera entrega.

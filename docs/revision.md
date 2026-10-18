@@ -29,15 +29,16 @@
 - Revisión visual en navegador de resumen, catálogo, formulario de edición y guía.
 - Los tests usan una base temporal; no alteran los datos de demostración del usuario.
 - Conciliación de los cinco saldos locales contra sus movimientos: cero diferencias.
-- Workflow de GitHub Actions preparado con PostgreSQL 16. No se ha ejecutado en GitHub: el repositorio sigue local.
-- Docker está instalado, pero su motor no está iniciado en este equipo. No se presenta la prueba concurrente como validada localmente.
+- Repositorio público: [Matias-dev-cl/stockflow](https://github.com/Matias-dev-cl/stockflow), conservando los commits progresivos.
+- Las 38 pruebas aprobaron con PostgreSQL 16 en [GitHub Actions](https://github.com/Matias-dev-cl/stockflow/actions/runs/39164187677), incluida la prueba concurrente.
+- Docker está instalado, pero su motor no está iniciado en este equipo. La validación concurrente se realizó en CI, no con SQLite local.
 
 ## Trabajo pendiente conocido
 
 | Trabajo | Estado |
 |---|---|
-| Validar concurrencia con PostgreSQL | Prueba escrita; pendiente de ejecución en ese motor |
-| Subir repositorio y ejecutar CI | Workflow preparado; pendiente de publicar el repositorio |
+| Validar concurrencia con PostgreSQL | Completado en GitHub Actions |
+| Subir repositorio y ejecutar CI | Completado; repositorio público y primera ejecución aprobada |
 | Despliegue público, HTTPS, estáticos y respaldos | Pendiente |
 | Varias relaciones producto–proveedor y códigos externos | Pendiente; hoy hay un proveedor principal |
 | OpenAPI y edición REST del catálogo | Pendiente; API inicial documentada en README |
