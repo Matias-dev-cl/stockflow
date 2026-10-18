@@ -1,12 +1,26 @@
 # StockFlow
 
+[![Pruebas](https://github.com/Matias-dev-cl/stockflow/actions/workflows/checks.yml/badge.svg?branch=main)](https://github.com/Matias-dev-cl/stockflow/actions/workflows/checks.yml)
+[![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)](requirements.txt)
+[![Django](https://img.shields.io/badge/Django-backend-092E20?logo=django&logoColor=white)](config/)
+
 Sistema web de inventario y reposición para pequeñas empresas, construido con Python, Django y Django REST Framework.
 
-> **Estado:** MVP funcional en desarrollo local. Incluye catálogo, movimientos, reposición, edición rápida, archivado reversible y API inicial. El despliegue público sigue pendiente.
+Proyecto de portafolio de [Matías Muñoz](https://github.com/Matias-dev-cl). Demuestra desarrollo full stack, lógica de negocio, validaciones, transacciones y pruebas automatizadas.
+
+> **Estado:** MVP funcional con demo local y datos ficticios. El código es público; la aplicación todavía no tiene una URL de despliegue público.
 
 ## Qué problema resuelve
 
 Cuando las existencias se controlan con planillas y mensajes, resulta difícil saber cuánto hay disponible y explicar las diferencias. StockFlow reúne productos, ubicaciones y movimientos: cada entrada, salida o ajuste conserva su motivo y responsable.
+
+## Capturas
+
+| Resumen del inventario | Catálogo adaptable |
+|---|---|
+| ![Resumen con métricas de inventario](docs/capturas/resumen.jpg) | ![Catálogo en tarjetas para pantallas pequeñas](docs/capturas/catalogo-movil.jpg) |
+
+Las capturas utilizan datos ficticios. [Ver las acciones del detalle de producto](docs/capturas/detalle.jpg).
 
 ## Qué puedes hacer
 
@@ -51,6 +65,8 @@ Los ajustes usan una diferencia firmada: si el sistema muestra 10 y contaste 8, 
 Requiere Python 3.12 o superior.
 
 ```powershell
+git clone https://github.com/Matias-dev-cl/stockflow.git
+cd stockflow
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
@@ -72,7 +88,7 @@ python manage.py makemigrations --check --dry-run
 python manage.py test apps.inventario.tests
 ```
 
-La suite cubre reglas de stock, rollback, restricciones de base de datos, permisos, API, archivado, paginación, configuración y datos demo. La prueba concurrente se omite en SQLite porque ese motor no ofrece el bloqueo por fila utilizado; se ejecuta al usar PostgreSQL. El workflow está guardado en [checks.yml](.github/workflows/checks.yml), pendiente de ejecutarse en GitHub.
+La suite incluye 38 pruebas sobre reglas de stock, rollback, restricciones de base de datos, permisos, API, archivado, paginación, configuración, caché de estilos y datos demo. La prueba concurrente se omite en SQLite porque ese motor no ofrece el bloqueo por fila utilizado; se ejecuta al usar PostgreSQL. El [workflow](.github/workflows/checks.yml) utiliza PostgreSQL 16 y el estado de cada ejecución puede consultarse en [GitHub Actions](https://github.com/Matias-dev-cl/stockflow/actions).
 
 ## API inicial
 
