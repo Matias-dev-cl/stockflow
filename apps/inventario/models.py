@@ -56,5 +56,21 @@ class Movement(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="stock_movements")
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     corrects = models.ForeignKey("self", null=True, blank=True, on_delete=models.PROTECT, related_name="corrections")
-    class Meta: ordering = ["-created_at", "-pk"]
+    class Meta:
+        ordering = ["-created_at", "-pk"]
+        constraints = [
+            models.CheckConstraint(
+                condition=(models.Q(kind__in=["IN", "OUT"], quantity__gt=0)
+                           | (models.Q(kind="ADJUST") & ~models.Q(quantity=0))),
+                name="valid_movement_kind_quantity",
+            ),
+        ]
+
+    @property
+    def delta(self):
+        return -self.quantity if self.kind == self.Kind.OUT else self.quantity
+
+    @property
+    def signed_quantity(self):
+        return f"{self.delta:+d}"
     def __str__(self): return f"{self.get_kind_display()} · {self.product} · {self.quantity}"

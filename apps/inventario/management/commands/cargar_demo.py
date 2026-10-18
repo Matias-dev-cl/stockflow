@@ -1,10 +1,16 @@
 from django.contrib.auth import get_user_model
-from django.core.management.base import BaseCommand
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
 from apps.inventario.models import Category, Supplier, Product, Location, StockBalance, Movement
+from apps.inventario.services import record_movement
 
 class Command(BaseCommand):
     help = "Carga catálogo y saldos de ejemplo para revisión local."
+    @transaction.atomic
     def handle(self, *args, **options):
+        if not settings.DEBUG:
+            raise CommandError("Los datos de demostración solo se cargan con DEBUG=1.")
         User = get_user_model()
         user, created = User.objects.get_or_create(username="maty", defaults={"email": "maty@example.local", "is_staff": True, "is_superuser": True})
         if created:
@@ -17,7 +23,6 @@ class Command(BaseCommand):
             category, _ = Category.objects.get_or_create(name=category_name)
             for sku, name, minimum, quantity in entries:
                 product, _ = Product.objects.get_or_create(sku=sku, defaults={"name": name, "category": category, "supplier": supplier, "minimum": minimum})
-                balance, created = StockBalance.objects.get_or_create(product=product, location=location, defaults={"quantity": quantity})
-                if created:
-                    Movement.objects.create(product=product, location=location, kind=Movement.Kind.IN, quantity=quantity, reason="Stock inicial de demostración", user=user)
+                if not StockBalance.objects.filter(product=product, location=location).exists():
+                    record_movement(product=product, location=location, kind=Movement.Kind.IN, quantity=quantity, reason="Stock inicial de demostración", user=user)
         self.stdout.write(self.style.SUCCESS("Demo cargada. Usuario: maty · contraseña: stockflow-demo"))
