@@ -6,6 +6,10 @@
 
 Sistema web de inventario y reposición para pequeñas empresas, construido con Python, Django y Django REST Framework.
 
+![Dashboard de StockFlow: vista inicial completa con indicadores de stock, actividad reciente, alertas de reposición y navegación](docs/capturas/dashboard.jpg)
+
+El dashboard es la pantalla de entrada: permite revisar el estado del inventario y decidir qué necesita atención antes de entrar a cada producto.
+
 Proyecto de portafolio de [Matías Muñoz](https://github.com/Matias-dev-cl). Demuestra desarrollo full stack, lógica de negocio, validaciones, transacciones y pruebas automatizadas.
 
 > **Estado:** MVP funcional con demo local y datos ficticios. El código es público; la aplicación todavía no tiene una URL de despliegue público.
@@ -14,17 +18,23 @@ Proyecto de portafolio de [Matías Muñoz](https://github.com/Matias-dev-cl). De
 
 Cuando las existencias se controlan con planillas y mensajes, resulta difícil saber cuánto hay disponible y explicar las diferencias. StockFlow reúne productos, ubicaciones y movimientos: cada entrada, salida o ajuste conserva su motivo y responsable.
 
-## Capturas
+## Vistas complementarias
 
-Capturas completas con datos ficticios. Haz clic en cada imagen para verla en su resolución original.
+Capturas completas con datos ficticios. Abre cada sección o haz clic en una imagen para verla en su resolución original.
 
-### Catálogo de productos
+<details>
+<summary>Catálogo de productos</summary>
 
 ![Catálogo completo de productos, con filtros, existencias y acciones de edición](docs/capturas/catalogo.jpg)
 
-### Detalle y acciones rápidas
+</details>
+
+<details>
+<summary>Detalle y acciones rápidas</summary>
 
 ![Detalle completo del producto, con movimientos, edición rápida, ubicaciones e historial](docs/capturas/detalle.jpg)
+
+</details>
 
 ## Qué puedes hacer
 
